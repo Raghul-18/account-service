@@ -24,15 +24,18 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // Add JWT filter before Spring Security's authentication filter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - no authentication required
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/swagger-docs/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
 
                         // Admin endpoints - require ADMIN role
                         .requestMatchers("/api/accounts/admin/**").hasRole("ADMIN")
@@ -40,11 +43,12 @@ public class SecurityConfig {
                         // Customer endpoints - require CUSTOMER or ADMIN role
                         .requestMatchers("/api/accounts/**").hasAnyRole("CUSTOMER", "ADMIN")
 
-                        // Deny all other requests
+                        // All other requests
                         .anyRequest().authenticated()
                 );
 
         log.info("✅ SecurityFilterChain configured successfully with JWT authentication");
         return http.build();
     }
+
 }
