@@ -1,0 +1,116 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: account-service
+
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521/FREEPDB1
+    username: RAGHUL
+    password: 6379362346
+    driver-class-name: oracle.jdbc.OracleDriver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Use validate with Flyway
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.OracleDialect
+        format_sql: true
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    locations: classpath:db/migration
+    table: flyway_schema_history_account_service
+    out-of-order: true
+    clean-disabled: false
+    baseline-version: 0
+    baseline-description: "Initial baseline for Account Service"
+
+  # Kafka Configuration (for future use)
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: account-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.bank.account.dto,com.bank.kyc.events"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    template:
+      default-topic: account-events
+
+# JWT Configuration
+jwt:
+  secret: bXlfc3VwZXJfc2VjdXJlX3Rlc3Rfa2V5XzEyMzQ1Njc4OTA=  # Same as other services
+  expiration-ms: 3600000
+
+# External Service URLs
+services:
+  customer:
+    base-url: http://localhost:8081
+  kyc:
+    base-url: http://localhost:8084
+  gateway:
+    base-url: http://localhost:8080
+
+# Account Number Generation
+account:
+  number:
+    prefix: BANK
+    savings-code: SAV
+    current-code: CUR
+
+  # Default balances for new accounts
+  default-balance:
+    savings: 1000.00    # Minimum balance for savings
+    current: 5000.00    # Minimum balance for current
+
+# Swagger Documentation
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    tryItOutEnabled: true
+
+# Logging Configuration
+logging:
+  level:
+    org.flywaydb: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.springframework.kafka: INFO
+    org.springframework.security: DEBUG
+    com.bank.account: DEBUG
+    org.springframework.web: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management and Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
