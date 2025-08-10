@@ -3,7 +3,7 @@ package com.bank.account.controller;
 import com.bank.account.client.CustomerServiceClient;
 import com.bank.account.dto.AccountCreationRequest;
 import com.bank.account.dto.AccountResponse;
-import com.bank.account.security.JwtAuthInterceptor;
+import com.bank.account.security.JwtAuthenticationFilter;
 import com.bank.account.service.AccountService;
 import com.bank.account.util.AccountType;
 import com.bank.account.util.AuthenticatedUser;
@@ -35,13 +35,22 @@ public class AccountController {
             @Valid @RequestBody AccountCreationRequest request,
             HttpServletRequest httpRequest) {
 
-        AuthenticatedUser currentUser = JwtAuthInterceptor.getCurrentUser();
+        AuthenticatedUser currentUser = JwtAuthenticationFilter.getCurrentUser();
+        if (currentUser == null) {
+            throw new SecurityException("User not authenticated");
+        }
+
         Long userId = currentUser.getUserId();
+        log.info("🏦 User {} ({}) creating {} account",
+                userId, currentUser.getUsername(), request.getAccountType());
 
         // Resolve userId to customerId
         String jwtToken = httpRequest.getHeader("Authorization");
-        Long customerId = customerServiceClient.getCustomerIdByUserId(userId, jwtToken);
+        if (jwtToken == null) {
+            throw new SecurityException("Authorization header missing");
+        }
 
+        Long customerId = customerServiceClient.getCustomerIdByUserId(userId, jwtToken);
         if (customerId == null) {
             throw new RuntimeException("Customer record not found for user: " + userId);
         }
@@ -49,8 +58,8 @@ public class AccountController {
         // Override customerId from JWT (security measure)
         request.setCustomerId(customerId);
 
-        log.info("🏦 User {} creating {} account for customer {}",
-                userId, request.getAccountType(), customerId);
+        log.info("🏦 Creating {} account for customer {} (user {})",
+                request.getAccountType(), customerId, userId);
 
         AccountResponse response = accountService.createAccount(request);
         return ResponseEntity.ok(response);
@@ -62,13 +71,20 @@ public class AccountController {
      */
     @GetMapping("/my-accounts")
     public ResponseEntity<List<AccountResponse>> getMyAccounts(HttpServletRequest httpRequest) {
-        AuthenticatedUser currentUser = JwtAuthInterceptor.getCurrentUser();
+        AuthenticatedUser currentUser = JwtAuthenticationFilter.getCurrentUser();
+        if (currentUser == null) {
+            throw new SecurityException("User not authenticated");
+        }
+
         Long userId = currentUser.getUserId();
 
         // Resolve userId to customerId
         String jwtToken = httpRequest.getHeader("Authorization");
-        Long customerId = customerServiceClient.getCustomerIdByUserId(userId, jwtToken);
+        if (jwtToken == null) {
+            throw new SecurityException("Authorization header missing");
+        }
 
+        Long customerId = customerServiceClient.getCustomerIdByUserId(userId, jwtToken);
         if (customerId == null) {
             throw new RuntimeException("Customer record not found for user: " + userId);
         }
@@ -88,13 +104,20 @@ public class AccountController {
             @PathVariable Long accountId,
             HttpServletRequest httpRequest) {
 
-        AuthenticatedUser currentUser = JwtAuthInterceptor.getCurrentUser();
+        AuthenticatedUser currentUser = JwtAuthenticationFilter.getCurrentUser();
+        if (currentUser == null) {
+            throw new SecurityException("User not authenticated");
+        }
+
         Long userId = currentUser.getUserId();
 
         // Resolve userId to customerId for ownership verification
         String jwtToken = httpRequest.getHeader("Authorization");
-        Long customerId = customerServiceClient.getCustomerIdByUserId(userId, jwtToken);
+        if (jwtToken == null) {
+            throw new SecurityException("Authorization header missing");
+        }
 
+        Long customerId = customerServiceClient.getCustomerIdByUserId(userId, jwtToken);
         if (customerId == null) {
             throw new RuntimeException("Customer record not found for user: " + userId);
         }
@@ -119,13 +142,20 @@ public class AccountController {
             @PathVariable String accountType,
             HttpServletRequest httpRequest) {
 
-        AuthenticatedUser currentUser = JwtAuthInterceptor.getCurrentUser();
+        AuthenticatedUser currentUser = JwtAuthenticationFilter.getCurrentUser();
+        if (currentUser == null) {
+            throw new SecurityException("User not authenticated");
+        }
+
         Long userId = currentUser.getUserId();
 
         // Resolve userId to customerId
         String jwtToken = httpRequest.getHeader("Authorization");
-        Long customerId = customerServiceClient.getCustomerIdByUserId(userId, jwtToken);
+        if (jwtToken == null) {
+            throw new SecurityException("Authorization header missing");
+        }
 
+        Long customerId = customerServiceClient.getCustomerIdByUserId(userId, jwtToken);
         if (customerId == null) {
             throw new RuntimeException("Customer record not found for user: " + userId);
         }

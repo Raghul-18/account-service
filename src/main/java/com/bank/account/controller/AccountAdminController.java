@@ -4,7 +4,7 @@ import com.bank.account.dto.AccountResponse;
 import com.bank.account.dto.AccountStatsResponse;
 import com.bank.account.dto.AccountStatusUpdateRequest;
 import com.bank.account.dto.BalanceUpdateRequest;
-import com.bank.account.security.JwtAuthInterceptor;
+import com.bank.account.security.JwtAuthenticationFilter;
 import com.bank.account.service.AccountService;
 import com.bank.account.util.AuthenticatedUser;
 
@@ -72,8 +72,7 @@ public class AccountAdminController {
             @PathVariable Long accountId,
             @Valid @RequestBody AccountStatusUpdateRequest request) {
 
-        validateAdmin();
-        AuthenticatedUser currentUser = JwtAuthInterceptor.getCurrentUser();
+        AuthenticatedUser currentUser = validateAdmin();
 
         log.info("👑 Admin {} updating account {} status to {}",
                 currentUser.getUsername(), accountId, request.getAccountStatus());
@@ -91,8 +90,7 @@ public class AccountAdminController {
             @PathVariable Long accountId,
             @Valid @RequestBody BalanceUpdateRequest request) {
 
-        validateAdmin();
-        AuthenticatedUser currentUser = JwtAuthInterceptor.getCurrentUser();
+        AuthenticatedUser currentUser = validateAdmin();
 
         log.info("👑 Admin {} updating account {} balance to ₹{}",
                 currentUser.getUsername(), accountId, request.getBalance());
@@ -133,8 +131,7 @@ public class AccountAdminController {
      */
     @PostMapping("/create-for-customer/{customerId}")
     public ResponseEntity<List<AccountResponse>> createAccountsForCustomer(@PathVariable Long customerId) {
-        validateAdmin();
-        AuthenticatedUser currentUser = JwtAuthInterceptor.getCurrentUser();
+        AuthenticatedUser currentUser = validateAdmin();
 
         log.info("👑 Admin {} manually creating accounts for customer {}",
                 currentUser.getUsername(), customerId);
@@ -150,10 +147,16 @@ public class AccountAdminController {
     /**
      * Helper method to validate admin access
      */
-    private void validateAdmin() {
-        AuthenticatedUser currentUser = JwtAuthInterceptor.getCurrentUser();
+    private AuthenticatedUser validateAdmin() {
+        AuthenticatedUser currentUser = JwtAuthenticationFilter.getCurrentUser();
+        if (currentUser == null) {
+            throw new SecurityException("User not authenticated");
+        }
+
         if (!"ADMIN".equalsIgnoreCase(currentUser.getRole())) {
             throw new SecurityException("Only ADMIN can access this endpoint");
         }
+
+        return currentUser;
     }
 }
