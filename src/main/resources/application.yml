@@ -18,16 +18,12 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate  # Use validate with Flyway
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.OracleDialect
         format_sql: true
-        jdbc:
-          batch_size: 25
-        order_inserts: true
-        order_updates: true
 
   flyway:
     enabled: true
@@ -40,7 +36,6 @@ spring:
     baseline-version: 0
     baseline-description: "Initial baseline for Account Service"
 
-  # Kafka Configuration (for future use)
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
@@ -56,12 +51,10 @@ spring:
     template:
       default-topic: account-events
 
-# JWT Configuration
 jwt:
-  secret: bXlfc3VwZXJfc2VjdXJlX3Rlc3Rfa2V5XzEyMzQ1Njc4OTA=  # Same as other services
+  secret: bXlfc3VwZXJfc2VjdXJlX3Rlc3Rfa2V5XzEyMzQ1Njc4OTA=
   expiration-ms: 3600000
 
-# External Service URLs
 services:
   customer:
     base-url: http://localhost:8081
@@ -70,19 +63,15 @@ services:
   gateway:
     base-url: http://localhost:8080
 
-# Account Number Generation
 account:
   number:
     prefix: BANK
     savings-code: SAV
     current-code: CUR
-
-  # Default balances for new accounts
   default-balance:
-    savings: 1000.00    # Minimum balance for savings
-    current: 5000.00    # Minimum balance for current
+    savings: 1000.00
+    current: 5000.00
 
-# Swagger Documentation
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -91,34 +80,24 @@ springdoc:
     operationsSorter: method
     tagsSorter: alpha
     tryItOutEnabled: true
+    display-request-duration: true
+    doc-expansion: none
+    deep-linking: true
+  info:
+    title: Account Service API
+    description: REST API documentation for the Account Service in the Secure Onboarding Banking System.
+    version: 1.0.0
+    termsOfService: https://yourbank.com/terms
+    contact:
+      name: API Support
+      url: https://yourbank.com/support
+      email: support@yourbank.com
+    license:
+      name: Apache 2.0
+      url: https://www.apache.org/licenses/LICENSE-2.0.html
 
-# Logging Configuration
 logging:
   level:
     root: INFO
-    org.flywaydb: DEBUG
-    org.hibernate: DEBUG
     org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.springframework.kafka: INFO
-    org.springframework.security: DEBUG
-    org.springframework.security.web: DEBUG
-    org.springframework.web: DEBUG
-    org.springframework.web.servlet.mvc.method.annotation: DEBUG
     com.bank.account: DEBUG
-    com.zaxxer.hikari: DEBUG
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
-  file:
-    name: logs/account-service.log
-
-# Management and Monitoring
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
-  endpoint:
-    health:
-      show-details: always

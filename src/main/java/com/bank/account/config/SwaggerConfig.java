@@ -33,7 +33,6 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(getApiInfo())
                 .servers(getServers())
-                .tags(getTags())
                 .components(getComponents())
                 .security(getSecurityRequirements());
     }
@@ -68,14 +67,7 @@ public class SwaggerConfig {
                         1. Obtain JWT token from Auth Service
                         2. Include token in Authorization header: `Bearer <your-jwt-token>`
                         3. Use appropriate endpoints based on your role
-                        """)
-                .contact(new Contact()
-                        .name("Bank Development Team")
-                        .email("dev@bank.com")
-                        .url("https://bank.com/contact"))
-                .license(new License()
-                        .name("MIT License")
-                        .url("https://opensource.org/licenses/MIT"));
+                        """);
     }
 
     private List<Server> getServers() {
@@ -86,20 +78,6 @@ public class SwaggerConfig {
                 new Server()
                         .url("http://localhost:8080/api/account")
                         .description("API Gateway (Recommended)")
-        );
-    }
-
-    private List<Tag> getTags() {
-        return List.of(
-                new Tag()
-                        .name("Account Management")
-                        .description("👤 Customer account operations - create accounts, view balances, manage personal accounts"),
-                new Tag()
-                        .name("Admin Operations")
-                        .description("👑 Administrative functions - system-wide account management, statistics, and control"),
-                new Tag()
-                        .name("System Health")
-                        .description("🔍 Health checks and system monitoring endpoints")
         );
     }
 
