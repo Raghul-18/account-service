@@ -48,9 +48,9 @@ The service follows a layered architecture pattern with event-driven integration
 
 ```
 ┌─────────────┐    KYC Status     ┌─────────────────┐    Kafka Event    ┌─────────────────┐
-│ KYC Service │ ──── Update ────→ │ Customer Service │ ──── Publish ───→ │ Account Service │
-│   (8084)    │                  │     (8081)      │                   │     (8083)      │
-└─────────────┘                  └─────────────────┘                   └─────────────────┘
+│ KYC Service │ ──── Update ────→ │Customer Service │ ──── Publish ───→ │ Account Service │
+│   (8084)    │                   │     (8081)      │                   │     (8083)      │
+└─────────────┘                   └─────────────────┘                   └─────────────────┘
                                            │                                       │
                                            │                                       │
                                       Updates KYC                          Creates Both
